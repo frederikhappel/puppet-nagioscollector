@@ -1,0 +1,4 @@
+# This file is managed by puppet! Do not change!
+<% @parent_hosts.sort.each do |nestedarray| -%>
+<%= nestedarray[0] %>:<%= [nestedarray[1]].flatten.join(',') %>
+<% end -%>

@@ -1,0 +1,55 @@
+# This file is managed by puppet! Do not change!
+<%
+  self_host_name = scope.lookupvar('::fqdn')
+  ignore_master_host = (@master_host.nil? or @master_event_handler.nil? or @master_host == self_host_name)
+  @existing_hosts.keys.sort.each do |host_name|
+    parameters = @existing_hosts[host_name]
+    parents = [parameters['parents'], @parent_hosts[host_name]].flatten.compact
+    if !parameters['template_override'].nil?
+      item_template = parameters['template_override']
+    elsif !parameters['template'].nil?
+      item_template = parameters['template']
+    else
+      escalation_type = !parameters['escalation_type_override'].nil? ? parameters['escalation_type_override'] : parameters['escalation_type']
+      item_template = @item_types[escalation_type]['host']['template']
+      item_template = @item_types['standard']['host']['template'] if item_template.nil?
+    end
+    active_checks_enabled = !parameters['active'].nil? ? parameters['active'] : @host_checks_active
+    passive_checks_enabled = !parameters['passive'].nil? ? parameters['passive'] : @host_checks_passive
+-%>
+# host <%= host_name %>
+define host {
+  host_name                      <%= host_name %>
+  address                        <%= parameters['address'] %>
+  check_command                  <%= parameters['check_command'] %>
+<% if !parents.empty? -%>
+  parents                        <%= parents.join(',') %>
+<% end -%>
+<% if !parameters['notifications_enabled'].nil? -%>
+  notifications_enabled          <%= parameters['notifications_enabled'] ? 1 : 0 %>
+<% end -%>
+<% if !item_template.nil? -%>
+  use                            <%= item_template %>
+<% end -%>
+  active_checks_enabled          <%= active_checks_enabled ? 1 : 0 %>
+  passive_checks_enabled         <%= passive_checks_enabled ? 1 : 0 %>
+<% if !parameters['hostgroups'].nil? and !parameters['hostgroups'].empty? -%>
+  hostgroups                     <%= parameters['hostgroups'].join(',') %>
+<% end -%>
+<% if !ignore_master_host and host_name == @master_host -%>
+  event_handler_enabled          1
+  event_handler                  <%= @master_event_handler %>
+<% end -%>
+<% if !parameters['icon'].nil? -%>
+  icon_image_alt                 <%= parameters['icon'] %>
+  icon_image                     <%= "base/#{parameters['icon']}.png".downcase %>
+  statusmap_image                <%= "base/#{parameters['icon']}.gd2".downcase %>
+<% end -%>
+<% if !parameters['action_url'].nil? -%>
+  action_url                     <%= parameters['action_url'] %>
+<% end -%>
+<% if !parameters['notes_url'].nil? -%>
+  notes_url                      <%= parameters['notes_url'] %>
+<% end -%>
+}
+<% end %>

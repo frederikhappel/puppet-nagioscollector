@@ -1,0 +1,29 @@
+# This file is managed by puppet! Do not change!
+<%
+  @existing_hosts.keys.sort.each do |host_name|
+    host_parameters = @existing_hosts[host_name]
+    host_parameters['services'].keys.sort.each do |key|
+      parameters = host_parameters['services'][key]
+      if parameters['notifications_enabled'].nil? or parameters['notifications_enabled']
+        if !parameters['escalation_type_override'].nil?
+          escalation_type = parameters['escalation_type_override']
+        elsif !parameters['escalation_type'].nil?
+          escalation_type = parameters['escalation_type']
+        else
+          escalation_type = 'standard'
+        end
+        service_escalations = @item_types[escalation_type]['service']['escalations']
+        if !service_escalations.nil?
+-%>
+# service <%= parameters['service_description'] %>@<%= host_name %>
+<% service_escalations.flatten.each do |escalation_step| -%>
+define serviceescalation {
+  service_description            <%= parameters['service_description'] %>
+  host_name                      <%= host_name %>
+  use                            <%= escalation_step %>
+}
+<% end %>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>

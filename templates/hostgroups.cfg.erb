@@ -1,0 +1,27 @@
+# This file is managed by puppet! Do not change!
+<% @exported_hostgroups.sort_by { |k| k["title"] }.each do |item| -%>
+<%
+  if !@existing_hosts[item['title']].nil?
+    members = [item['parameters']['members']].flatten
+    if !item['parameters']['force']
+      members.delete_if { |member| @existing_hosts[member].nil? }
+    end
+    hostgroup_members = [item['parameters']['hostgroup_members']].flatten
+    if !members.empty? or !hostgroup_members.empty?
+-%>
+# hostgroup <%= item['title'] %>
+define hostgroup {
+  hostgroup_name                 <%= item['title'] %>
+<% if !members.empty? -%>
+  members                        <%= members.join(',') %>
+<% end -%>
+<% if !hostgroup_members.empty? -%>
+  hostgroup_members              <%= hostgroup_members.join(',') %>
+<% end -%>
+<% if !item['parameters']['description'].nil? -%>
+  alias                          <%= item['parameters']['description'] %>
+<% end -%>
+}
+<% end %>
+<% end -%>
+<% end -%>

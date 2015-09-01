@@ -1,0 +1,3 @@
+# nagioscollector #
+
+This is the nagioscollector module. It provides...

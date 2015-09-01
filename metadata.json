@@ -1,0 +1,50 @@
+{
+  "author": "frederikhappel",
+  "dependencies": [
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": "4.8.0-frederikhappel"
+    }, {
+  	  "name": "dalen-puppetdbquery",
+      "version_requirement": "1.6.1"
+    }
+  ],
+  "license": "GPL v3",
+  "name": "frederikhappel-nagioscollector",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "5",
+        "6"
+      ]
+    }
+  ],
+  "project_page": "",
+  "requirements": [],
+  "source": "https://github.com/frederikhappel/puppet-nagioscollector",
+  "summary": "Puppet module for managing Nagios collector resources",
+  "tags": [],
+  "version": "0.1.0"
+}

@@ -1,0 +1,81 @@
+# This file is managed by puppet! Do not change!
+<%
+  @existing_hosts.keys.sort.each do |host_name|
+    host_parameters = @existing_hosts[host_name]
+    host_parameters['services'].keys.sort.each do |key|
+      parameters = host_parameters['services'][key]
+      if !parameters['template_override'].nil?
+        item_template = parameters['template_override']
+      elsif !parameters['template'].nil?
+        item_template = parameters['template']
+      else
+        escalation_type = !parameters['escalation_type_override'].nil? ? parameters['escalation_type_override'] : parameters['escalation_type']
+        item_template = @item_types[escalation_type]['service']['template']
+        item_template = @item_types['standard']['service']['template'] if item_template.nil?
+      end
+      host_notifications_enabled = host_parameters['notifications_enabled'].nil? || host_parameters['notifications_enabled']
+-%>
+# service <%= parameters['service_description'] %>@<%= host_name %>
+define service {
+  service_description            <%= parameters['service_description'] %>
+  host_name                      <%= host_name %>
+  check_command                  <%= parameters['check_command'] %>
+<% if !parameters['max_check_attempts'].nil? -%>
+  max_check_attempts             <%= parameters['max_check_attempts'] %>
+<% end -%>
+<% if !parameters['check_interval_in_min'].nil? -%>
+  check_interval                 <%= parameters['check_interval_in_min'] %>
+<% end -%>
+<% if !parameters['retry_interval_in_min'].nil? -%>
+  check_interval                 <%= parameters['retry_interval_in_min'] %>
+<% end -%>
+<% if !host_notifications_enabled -%>
+  notifications_enabled          0
+<% elsif !parameters['notifications_enabled'].nil? -%>
+  notifications_enabled          <%= parameters['notifications_enabled'] ? 1 : 0 %>
+<% if !parameters['first_notification_delay_in_min'].nil? -%>
+  first_notification_delay       <%= parameters['first_notification_delay_in_min'] %>
+<% end -%>
+<% end -%>
+<% if !item_template.nil? -%>
+  use                            <%= item_template %>
+<% end -%>
+<% if !parameters['active'].nil? -%>
+  active_checks_enabled          <%= parameters['active'] ? 1 : 0 %>
+<% end -%>
+<% if !parameters['action_url'].nil? -%>
+  action_url                     <%= parameters['action_url'] %>
+<% end -%>
+<% if !parameters['passive'].nil? -%>
+  passive_checks_enabled         <%= parameters['passive'] ? 1 : 0 %>
+<% end -%>
+<% if parameters['passive'] -%>
+  check_freshness                1
+<% if !parameters['freshness_threshold_in_seconds'].nil? -%>
+  freshness_threshold            <%= parameters['freshness_threshold_in_seconds'] %>
+<% else -%>
+  freshness_threshold            0
+<% end -%>
+<% end -%>
+<% if !parameters['event_handler'].nil? -%>
+  event_handler_enabled          1
+  event_handler                  <%= parameters['event_handler'] %>
+<% end -%>
+}
+<% if !parameters['dependent_service_description'].nil? and
+      !parameters['dependent_service_description'].empty? and
+      (parameters['dependent_service_description'] != parameters['service_description'] or
+       parameters['dependent_host_name'].nil? or
+       parameters['dependent_host_name'] != host_name ) -%>
+define servicedependency{
+  service_description            <%= parameters['service_description'] %>
+  host_name                      <%= host_name %>
+  dependent_host_name            <%= parameters['dependent_host_name'].nil? ? host_name : parameters['dependent_host_name'] %>
+  dependent_service_description  <%= parameters['dependent_service_description'] %>
+  execution_failure_criteria     <%= parameters['execution_failure_criteria'] %>
+  notification_failure_criteria  <%= parameters['notification_failure_criteria'] %>
+  inherits_parent                <%= parameters['inherits_parent'] ? 1 : 0 %>
+}
+<% end -%>
+<% end %>
+<% end -%>

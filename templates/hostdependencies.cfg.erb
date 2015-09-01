@@ -1,0 +1,25 @@
+# This file is managed by puppet! Do not change!
+<% @exported_hostdependencies.sort_by { |k| k["title"] }.each do |item| -%>
+<%
+  if !@existing_hosts[item['title']].nil?
+    dependent_host_names = [item['parameters']['dependent_host_names']].flatten
+    if !item['parameters']['force']
+      dependent_host_names.delete_if { |dependent_host| @existing_hosts[dependent_host].nil? }
+    end
+    dependent_hostgroup_names = [item['parameters']['dependent_hostgroup_names']].flatten
+-%>
+# hostdependency <%= item['title'] %>
+define hostdependency{
+  host_name                      <%= item['title'] %>
+<% if !dependent_host_names.empty? -%>
+  dependent_host_name            <%= dependent_host_names.join(',') %>
+<% end -%>
+<% if !dependent_hostgroup_names.empty? -%>
+  dependent_hostgroup_name       <%= dependent_hostgroup_names.join(',') %>
+<% end -%>
+  execution_failure_criteria     <%= item['parameters']['execution_failure_criteria'] %>
+  notification_failure_criteria  <%= item['parameters']['notification_failure_criteria'] %>
+  inherits_parent                <%= item['parameters']['inherits_parent'] ? 1 : 0 %>
+}
+<% end %>
+<% end -%>
